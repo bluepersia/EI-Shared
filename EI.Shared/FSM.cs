@@ -134,17 +134,32 @@ public class FSM<T> : FSM
 public abstract class FSMState
 {
 
-    public virtual void Enter()
+    public void Enter()
+    {
+        OnEnter();
+    }
+
+    public void Update()
+    {
+        OnUpdate();
+    }
+
+    public void Exit()
+    {
+        OnExit();
+    }
+
+    protected virtual void OnEnter()
     {
 
     }
 
-    public virtual void Update()
+    protected virtual void OnUpdate()
     {
 
     }
 
-    public virtual void Exit()
+    protected virtual void OnExit()
     {
 
     }
