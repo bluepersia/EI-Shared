@@ -38,7 +38,7 @@ public class FSM
     {
         if (!_states.ContainsKey(stateId))
         {
-            return;
+            throw new InvalidOperationException($"Cannot enter state {stateId}: state not registered.");
         }
 
         if (_states.ContainsKey(CurrentStateId))
@@ -101,5 +101,19 @@ public abstract class FSMState<T> : FSMState
     public FSMState(T parent)
     {
         Parent = parent;
+    }
+}
+
+
+public class IdleState : FSMState<FSM>
+{
+    public IdleState(FSM parent) : base(parent) { }
+
+    public override void Update()
+    {
+        if (Parent.CurrentStateId != 0)
+        {
+
+        }
     }
 }
