@@ -150,10 +150,9 @@ public abstract class FSMState
     }
 }
 
-public abstract class FSMState<TFSM, TOwner> : FSMState where TFSM : FSM<TOwner>
+public abstract class FSMState<TFSM> : FSMState where TFSM : FSM
 {
     public TFSM FSM { get; private set; }
-    public TOwner Owner => FSM.Owner;
 
     public FSMState(TFSM fsm)
     {
