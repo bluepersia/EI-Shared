@@ -14,14 +14,16 @@ public class FSM
         }
         _states[stateId].Add(state);
     }
-
+    /// <summary>
+    ///  Returns the first state of type T registered for the given stateId, or null if none exists.
+    /// </summary>
     public T? GetState<T>(int stateId) where T : FSMState
     {
-        if (!_states.ContainsKey(stateId))
+        if (!_states.TryGetValue(stateId, out var states))
         {
             return null;
         }
-        return _states[stateId].OfType<T>().FirstOrDefault();
+        return states.OfType<T>().FirstOrDefault();
     }
     public T GetRequiredState<T>(int stateId) where T : FSMState
     {
