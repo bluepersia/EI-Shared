@@ -23,6 +23,25 @@ public class FSM
         }
         return _states[stateId].OfType<T>().FirstOrDefault();
     }
+    public T GetRequiredState<T>(int stateId) where T : FSMState
+    {
+        if (!_states.TryGetValue(stateId, out var states))
+        {
+            throw new KeyNotFoundException(
+                $"Cannot get state {stateId}: state not registered.");
+        }
+
+        T? state = states.OfType<T>().SingleOrDefault();
+
+        if (state == null)
+        {
+            throw new InvalidOperationException(
+                $"Expected exactly one state of type {typeof(T).Name} for state {stateId}, but none was found.");
+        }
+
+        return state;
+    }
+
 
     public void SetState(int stateId, bool preserveEpoch = false)
     {
