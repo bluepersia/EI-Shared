@@ -14,6 +14,14 @@ public class FSM
         }
         _states[stateId].Add(state);
     }
+
+    public void Start(int initialStateId)
+    {
+        CurrentStateId = initialStateId;
+        Epoch = 0;
+        _states[initialStateId].ForEach(s => s.Enter());
+    }
+
     /// <summary>
     ///  Returns the first state of type T registered for the given stateId, or null if none exists.
     /// </summary>
