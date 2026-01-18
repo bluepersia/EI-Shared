@@ -60,6 +60,7 @@ public class FSMTest
         fsm.Register(IDLE, idleView);
         fsm.Register(MOVE, moveModel);
 
+        Assert.False(fsm.IsStarted);
         Assert.Equal(-1, fsm.CurrentStateId);
         Assert.Equal(0, fsm.Epoch);
         AssertZero(idleModel);
@@ -68,6 +69,8 @@ public class FSMTest
 
 
         fsm.SetState(IDLE);
+
+        Assert.True(fsm.IsStarted);
 
         fsm.Update();
 
@@ -83,6 +86,8 @@ public class FSMTest
         AssertZero(moveModel);
 
         fsm.SetState(MOVE);
+
+        Assert.True(fsm.IsStarted);
 
         fsm.Update();
 
