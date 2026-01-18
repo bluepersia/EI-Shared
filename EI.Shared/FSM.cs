@@ -69,6 +69,37 @@ public class FSM
         nextStates.ForEach(state => state.Enter());
     }
 
+
+    /// <summary>
+    /// Gets the state list for registered stateId
+    /// </summary>
+    public List<FSMState> GetStates(int stateId)
+    {
+        if (!_registry.TryGetValue(stateId, out var states))
+        {
+            throw new KeyNotFoundException($"{stateId} is not in the registry.");
+        }
+
+        return states;
+    }
+
+    /// <summary>
+    /// Gets the first of registered states of certain type
+    /// </summary>
+    public T GetState<T>(int stateId) where T : FSMState
+    {
+        List<FSMState> list = GetStates(stateId);
+
+        FSMState? first = list.Find(s => s.GetType() == typeof(T));
+
+        if (first == null)
+        {
+            throw new InvalidOperationException($"State of type {typeof(T)} was not found");
+        }
+
+        return (T)first;
+    }
+
     public void Update()
     {
         if (_registry.TryGetValue(CurrentStateId, out var states))
@@ -76,6 +107,17 @@ public class FSM
             states.ForEach(state => state.Update());
         }
     }
+}
+
+public class FSM<TOwner> : FSM
+{
+    public TOwner Owner { get; private set; }
+
+    public FSM(TOwner owner)
+    {
+        Owner = owner;
+    }
+
 }
 
 
