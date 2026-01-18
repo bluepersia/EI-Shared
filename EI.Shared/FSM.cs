@@ -4,6 +4,8 @@ public class FSM
 {
     public int Epoch { get; private set; } = 0;
     public int CurrentStateId { get; private set; } = -1;
+    public bool IsStarted => CurrentStateId != -1;
+
 
     private readonly Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
     public void Register(int stateId, FSMState state)
@@ -134,17 +136,32 @@ public class FSM<T> : FSM
 public abstract class FSMState
 {
 
-    public virtual void Enter()
+    public void Enter()
+    {
+        OnEnter();
+    }
+
+    public void Update()
+    {
+        OnUpdate();
+    }
+
+    public void Exit()
+    {
+        OnExit();
+    }
+
+    protected virtual void OnEnter()
     {
 
     }
 
-    public virtual void Update()
+    protected virtual void OnUpdate()
     {
 
     }
 
-    public virtual void Exit()
+    protected virtual void OnExit()
     {
 
     }
@@ -152,7 +169,7 @@ public abstract class FSMState
 
 public abstract class FSMState<TFSM> : FSMState where TFSM : FSM
 {
-    public TFSM FSM { get; private set; }
+    protected TFSM FSM { get; private set; }
 
     public FSMState(TFSM fsm)
     {
