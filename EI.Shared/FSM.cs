@@ -22,10 +22,19 @@ public class FSM
 
     public void Start(int initialStateId)
     {
+        if (!_states.TryGetValue(initialStateId, out var states))
+        {
+            throw new InvalidOperationException(
+                $"Cannot start FSM: state {initialStateId} not registered.");
+        }
+
         CurrentStateId = initialStateId;
         Epoch = 0;
-        _states[initialStateId].ForEach(s => s.Enter());
+
+        foreach (var state in states)
+            state.Enter();
     }
+
 
     /// <summary>
     ///  Returns the first state of type T registered for the given stateId, or null if none exists.
