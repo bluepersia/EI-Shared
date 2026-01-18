@@ -8,21 +8,64 @@ public class FSM
     private Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
     public void Register(int stateId, FSMState state)
     {
-        if (!_states.ContainsKey(stateId))
+        _states.TryAdd(stateId, new List<FSMState>());
+
+        if (_states[stateId].Any(s => s.GetType() == state.GetType()))
         {
-            _states[stateId] = new List<FSMState>();
+            throw new InvalidOperationException(
+                $"State type {state.GetType().Name} already registered for state {stateId}");
         }
+
         _states[stateId].Add(state);
     }
 
+
+    public void Start(int initialStateId)
+    {
+        if (!_states.TryGetValue(initialStateId, out var states))
+        {
+            throw new InvalidOperationException(
+                $"Cannot start FSM: state {initialStateId} not registered.");
+        }
+
+        CurrentStateId = initialStateId;
+        Epoch = 0;
+
+        foreach (var state in states)
+            state.Enter();
+    }
+
+
+    /// <summary>
+    ///  Returns the first state of type T registered for the given stateId, or null if none exists.
+    /// </summary>
     public T? GetState<T>(int stateId) where T : FSMState
     {
-        if (!_states.ContainsKey(stateId))
+        if (!_states.TryGetValue(stateId, out var states))
         {
             return null;
         }
-        return _states[stateId].OfType<T>().FirstOrDefault();
+        return states.OfType<T>().FirstOrDefault();
     }
+    public T GetRequiredState<T>(int stateId) where T : FSMState
+    {
+        if (!_states.TryGetValue(stateId, out var states))
+        {
+            throw new KeyNotFoundException(
+                $"Cannot get state {stateId}: state not registered.");
+        }
+
+        T? state = states.OfType<T>().SingleOrDefault();
+
+        if (state == null)
+        {
+            throw new InvalidOperationException(
+                $"Expected exactly one state of type {typeof(T).Name} for state {stateId}, but none was found.");
+        }
+
+        return state;
+    }
+
 
     public void SetState(int stateId, bool preserveEpoch = false)
     {
@@ -38,13 +81,15 @@ public class FSM
     {
         if (!_states.ContainsKey(stateId))
         {
-            return;
+            throw new InvalidOperationException($"Cannot enter state {stateId}: state not registered.");
         }
 
-        if (_states.ContainsKey(CurrentStateId))
+        if (_states.TryGetValue(CurrentStateId, out var currentStates))
         {
-            _states[CurrentStateId].ForEach(state => state.Exit());
+            foreach (var state in currentStates)
+                state.Exit();
         }
+
 
         if (!preserveEpoch)
         {
@@ -101,5 +146,19 @@ public abstract class FSMState<T> : FSMState
     public FSMState(T parent)
     {
         Parent = parent;
+    }
+}
+
+
+public class IdleState : FSMState<FSM>
+{
+    public IdleState(FSM parent) : base(parent) { }
+
+    public override void Update()
+    {
+        if (Parent.CurrentStateId != 0)
+        {
+
+        }
     }
 }
