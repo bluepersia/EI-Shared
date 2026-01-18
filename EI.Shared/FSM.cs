@@ -141,11 +141,11 @@ public abstract class FSMState
 
 public abstract class FSMState<T> : FSMState
 {
-    public T Parent { get; private set; }
+    public T FSM { get; private set; }
 
-    public FSMState(T parent)
+    public FSMState(T fsm)
     {
-        Parent = parent;
+        FSM = fsm;
     }
 }
 
