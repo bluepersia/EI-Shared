@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EI.Shared.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+564bbece3c9dfff7ec2a0979428842b92d03a1c2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+18870c6f0f2d04c00efbb60c3b56bbeea768eb76")]
 [assembly: System.Reflection.AssemblyProductAttribute("EI.Shared.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EI.Shared.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

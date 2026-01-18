@@ -101,6 +101,18 @@ public class FSMTest
         Assert.Equal(0, moveModel.ExitCalls);
         Assert.Equal(1, moveModel.UpdateCalls);
 
+        fsm.SetState(MOVE);
+
+        Assert.Equal(1, moveModel.EnterCalls);
+        Assert.Equal(0, moveModel.ExitCalls);
+
+        fsm.EnterState(MOVE);
+
+        Assert.Equal(2, moveModel.EnterCalls);
+        Assert.Equal(1, moveModel.ExitCalls);
+
+
+
     }
 
     [Fact]
