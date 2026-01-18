@@ -141,24 +141,12 @@ public abstract class FSMState
 
 public abstract class FSMState<T> : FSMState
 {
-    public T Parent { get; private set; }
+    public T FSM { get; private set; }
 
-    public FSMState(T parent)
+    public FSMState(T fsm)
     {
-        Parent = parent;
+        FSM = fsm;
     }
 }
 
 
-public class IdleState : FSMState<FSM>
-{
-    public IdleState(FSM parent) : base(parent) { }
-
-    public override void Update()
-    {
-        if (Parent.CurrentStateId != 0)
-        {
-
-        }
-    }
-}
