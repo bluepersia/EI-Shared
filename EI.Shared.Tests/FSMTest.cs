@@ -149,4 +149,29 @@ public class FSMTest
               fsm.EnterState(IDLE);
           });
     }
+
+    [Fact]
+    public void GetState()
+    {
+        TestFSM fsm = new TestFSM(this);
+
+        IdleModel idleModel = new IdleModel(fsm);
+        IdleView idleView = new IdleView(fsm);
+        MoveModel moveModel = new MoveModel(fsm);
+
+        fsm.Register(IDLE, idleModel);
+        fsm.Register(IDLE, idleView);
+        fsm.Register(MOVE, moveModel);
+
+        List<FSMState> statesList = fsm.GetStates(IDLE);
+
+        Assert.Equal(2, statesList.Count);
+        Assert.Equal(idleModel, statesList[0]);
+        Assert.Equal(idleView, statesList[1]);
+
+        IdleModel idleModelGot = fsm.GetState<IdleModel>(IDLE);
+
+        Assert.Equal(idleModel, idleModelGot);
+
+    }
 }
