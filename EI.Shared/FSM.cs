@@ -5,7 +5,7 @@ public class FSM
     public int Epoch { get; private set; } = 0;
     public int CurrentStateId { get; private set; } = -1;
 
-    private Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
+    private readonly Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
     public void Register(int stateId, FSMState state)
     {
         _states.TryAdd(stateId, new List<FSMState>());
@@ -22,6 +22,12 @@ public class FSM
 
     public void Start(int initialStateId)
     {
+        if (CurrentStateId != -1)
+        {
+            throw new InvalidOperationException("FSM has already been started.");
+        }
+
+
         if (!_states.TryGetValue(initialStateId, out var states))
         {
             throw new InvalidOperationException(
@@ -79,9 +85,10 @@ public class FSM
 
     public void EnterState(int stateId, bool preserveEpoch = false)
     {
-        if (!_states.ContainsKey(stateId))
+        if (!_states.TryGetValue(stateId, out var nextStates))
         {
-            throw new InvalidOperationException($"Cannot enter state {stateId}: state not registered.");
+            throw new InvalidOperationException(
+                $"Cannot enter state {stateId}: state not registered.");
         }
 
         if (_states.TryGetValue(CurrentStateId, out var currentStates))
@@ -96,18 +103,22 @@ public class FSM
             Epoch++;
         }
         CurrentStateId = stateId;
-        _states[CurrentStateId].ForEach(state => state.Enter());
+
+        foreach (var state in nextStates)
+            state.Enter();
     }
 
 
 
     public void Update()
     {
-        if (!_states.ContainsKey(CurrentStateId))
+        if (!_states.TryGetValue(CurrentStateId, out var states))
             return;
 
-        _states[CurrentStateId].ForEach(state => state.Update());
+        foreach (var state in states)
+            state.Update();
     }
+
 }
 
 
@@ -139,11 +150,12 @@ public abstract class FSMState
     }
 }
 
-public abstract class FSMState<T> : FSMState
+public abstract class FSMState<TFSM, TOwner> : FSMState where TFSM : FSM<TOwner>
 {
-    public T FSM { get; private set; }
+    public TFSM FSM { get; private set; }
+    public TOwner Owner => FSM.Owner;
 
-    public FSMState(T fsm)
+    public FSMState(TFSM fsm)
     {
         FSM = fsm;
     }
