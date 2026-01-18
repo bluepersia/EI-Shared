@@ -84,10 +84,12 @@ public class FSM
             throw new InvalidOperationException($"Cannot enter state {stateId}: state not registered.");
         }
 
-        if (_states.ContainsKey(CurrentStateId))
+        if (_states.TryGetValue(CurrentStateId, out var currentStates))
         {
-            _states[CurrentStateId].ForEach(state => state.Exit());
+            foreach (var state in currentStates)
+                state.Exit();
         }
+
 
         if (!preserveEpoch)
         {
