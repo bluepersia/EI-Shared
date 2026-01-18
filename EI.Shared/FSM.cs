@@ -5,6 +5,7 @@ public class FSM
     public int Epoch { get; private set; } = 0;
     public int CurrentStateId { get; private set; } = -1;
 
+
     private readonly Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
     public void Register(int stateId, FSMState state)
     {
@@ -167,7 +168,7 @@ public abstract class FSMState
 
 public abstract class FSMState<TFSM> : FSMState where TFSM : FSM
 {
-    public TFSM FSM { get; private set; }
+    protected TFSM FSM { get; private set; }
 
     public FSMState(TFSM fsm)
     {
