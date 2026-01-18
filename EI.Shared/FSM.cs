@@ -150,15 +150,3 @@ public abstract class FSMState<T> : FSMState
 }
 
 
-public class IdleState : FSMState<FSM>
-{
-    public IdleState(FSM parent) : base(parent) { }
-
-    public override void Update()
-    {
-        if (Parent.CurrentStateId != 0)
-        {
-
-        }
-    }
-}
