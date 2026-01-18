@@ -1,11 +1,11 @@
 using EI.Shared;
 namespace EI.Shared.Tests;
 
-public class UnitTest1
+public class FSMTest
 {
-    public class TestFSM : FSM<UnitTest1>
+    public class TestFSM : FSM<FSMTest>
     {
-        public TestFSM(UnitTest1 owner) : base(owner) { }
+        public TestFSM(FSMTest owner) : base(owner) { }
     }
 
     public class SpyState : FSMState<TestFSM>
