@@ -1,141 +1,131 @@
-﻿namespace EI.Shared;
+namespace EI.Shared;
 
 public class FSM
 {
     public int Epoch { get; private set; } = 0;
+
     public int CurrentStateId { get; private set; } = -1;
     public bool IsStarted => CurrentStateId != -1;
 
 
-    private readonly Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
+    private Dictionary<int, List<FSMState>> _registry = new Dictionary<int, List<FSMState>>();
+
+
+    ///<summary>
+    /// Registers provided state object with the provided state Id.
+    /// A state object can only be registered once per type.
+    /// State object must belong to this FSM.
+    /// </summary>
     public void Register(int stateId, FSMState state)
     {
-        _states.TryAdd(stateId, new List<FSMState>());
+        state.ValidateOwnership(this);
 
-        if (_states[stateId].Any(s => s.GetType() == state.GetType()))
+        _registry.TryAdd(stateId, new List<FSMState>());
+
+        if (_registry.Values.Any(list => list.Any(s => s.GetType() == state.GetType())))
         {
-            throw new InvalidOperationException(
-                $"State type {state.GetType().Name} already registered for state {stateId}");
+            throw new InvalidOperationException($"{state.GetType().ToString()} is already registered.");
         }
 
-        _states[stateId].Add(state);
+        _registry[stateId].Add(state);
     }
 
 
-    public void Start(int initialStateId)
+
+    /// <summary>
+    /// Enters the provided registered state, if not already in this state.
+    /// </summary>
+    public void SetState(int newStateId, bool preserveEpoch = false)
     {
-        if (CurrentStateId != -1)
+        if (newStateId == CurrentStateId)
         {
-            throw new InvalidOperationException("FSM has already been started.");
+            return;
         }
 
+        EnterState(newStateId, preserveEpoch);
+    }
 
-        if (!_states.TryGetValue(initialStateId, out var states))
+    /// <summary>
+    /// Forces an entry into the provided registered state.
+    /// If the FSM is already in the provided state, it is re-entered.
+    /// </summary>
+    public void EnterState(int stateId, bool preserveEpoch = false)
+    {
+        if (!_registry.TryGetValue(stateId, out var nextStates))
         {
-            throw new InvalidOperationException(
-                $"Cannot start FSM: state {initialStateId} not registered.");
+            throw new KeyNotFoundException($"State ${stateId} is not registered, yet you tried to enter it.");
         }
 
-        CurrentStateId = initialStateId;
-        Epoch = 0;
+        if (_registry.TryGetValue(CurrentStateId, out var currentStates))
+        {
+            currentStates.ForEach(state => state.Exit());
+        }
 
-        foreach (var state in states)
-            state.Enter();
+        CurrentStateId = stateId;
+
+        if (!preserveEpoch)
+            Epoch++;
+
+        nextStates.ForEach(state => state.Enter());
     }
 
 
     /// <summary>
-    ///  Returns the first state of type T registered for the given stateId, or null if none exists.
+    /// Gets the state list for registered stateId
     /// </summary>
-    public T? GetState<T>(int stateId) where T : FSMState
+    public List<FSMState> GetStates(int stateId)
     {
-        if (!_states.TryGetValue(stateId, out var states))
+        if (!_registry.TryGetValue(stateId, out var states))
         {
-            return null;
-        }
-        return states.OfType<T>().FirstOrDefault();
-    }
-    public T GetRequiredState<T>(int stateId) where T : FSMState
-    {
-        if (!_states.TryGetValue(stateId, out var states))
-        {
-            throw new KeyNotFoundException(
-                $"Cannot get state {stateId}: state not registered.");
+            throw new KeyNotFoundException($"{stateId} is not in the registry.");
         }
 
-        T? state = states.OfType<T>().SingleOrDefault();
-
-        if (state == null)
-        {
-            throw new InvalidOperationException(
-                $"Expected exactly one state of type {typeof(T).Name} for state {stateId}, but none was found.");
-        }
-
-        return state;
+        return states;
     }
 
-
-    public void SetState(int stateId, bool preserveEpoch = false)
+    /// <summary>
+    /// Gets the first of registered states of certain type
+    /// </summary>
+    public T GetState<T>(int stateId) where T : FSMState
     {
-        if (CurrentStateId == stateId)
+        List<FSMState> list = GetStates(stateId);
+
+        FSMState? first = list.Find(s => s.GetType() == typeof(T));
+
+        if (first == null)
         {
-            return;
+            throw new InvalidOperationException($"State of type {typeof(T)} was not found");
         }
 
-        EnterState(stateId, preserveEpoch);
+        return (T)first;
     }
-
-    public void EnterState(int stateId, bool preserveEpoch = false)
-    {
-        if (!_states.TryGetValue(stateId, out var nextStates))
-        {
-            throw new InvalidOperationException(
-                $"Cannot enter state {stateId}: state not registered.");
-        }
-
-        if (_states.TryGetValue(CurrentStateId, out var currentStates))
-        {
-            foreach (var state in currentStates)
-                state.Exit();
-        }
-
-
-        if (!preserveEpoch)
-        {
-            Epoch++;
-        }
-        CurrentStateId = stateId;
-
-        foreach (var state in nextStates)
-            state.Enter();
-    }
-
-
 
     public void Update()
     {
-        if (!_states.TryGetValue(CurrentStateId, out var states))
-            return;
-
-        foreach (var state in states)
-            state.Update();
+        if (_registry.TryGetValue(CurrentStateId, out var states))
+        {
+            states.ForEach(state => state.Update());
+        }
     }
-
 }
 
-
-public class FSM<T> : FSM
+public class FSM<TOwner> : FSM
 {
-    public T Owner { get; private set; }
-    public FSM(T owner)
+    public TOwner Owner { get; private set; }
+
+    public FSM(TOwner owner)
     {
         Owner = owner;
     }
+
 }
+
 
 public abstract class FSMState
 {
-
+    public virtual void ValidateOwnership(FSM fsm)
+    {
+    }
     public void Enter()
     {
         OnEnter();
@@ -151,10 +141,12 @@ public abstract class FSMState
         OnExit();
     }
 
+
     protected virtual void OnEnter()
     {
 
     }
+
 
     protected virtual void OnUpdate()
     {
@@ -167,19 +159,25 @@ public abstract class FSMState
     }
 }
 
+
+
 public abstract class FSMState<TFSM> : FSMState where TFSM : FSM
 {
     protected TFSM FSM { get; private set; }
 
-    public FSMState(TFSM fsm)
+    public FSMState(TFSM fsm) : base()
     {
         FSM = fsm;
+    }
+    public sealed override void ValidateOwnership(FSM fsm)
+    {
+        if (FSM != fsm)
+            throw new InvalidOperationException("Cross-FSM encountered");
     }
 }
 
 public abstract class FSMState<TFSM, TParent> : FSMState<TFSM> where TFSM : FSM
 {
-
     protected TParent Parent { get; private set; }
 
     public FSMState(TFSM fsm, TParent parent) : base(fsm)
@@ -187,5 +185,3 @@ public abstract class FSMState<TFSM, TParent> : FSMState<TFSM> where TFSM : FSM
         Parent = parent;
     }
 }
-
-
