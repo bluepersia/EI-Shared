@@ -4,6 +4,7 @@ public class FSM
 {
     public int Epoch { get; private set; } = 0;
     public int CurrentStateId { get; private set; } = -1;
+    public bool IsStarted => CurrentStateId != -1;
 
 
     private readonly Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
