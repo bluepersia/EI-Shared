@@ -180,7 +180,7 @@ public abstract class FSMState<TFSM> : FSMState where TFSM : FSM
 public abstract class FSMState<TFSM, TParent> : FSMState<TFSM> where TFSM : FSM
 {
 
-    public TParent Parent { get; private set; }
+    protected TParent Parent { get; private set; }
 
     public FSMState(TFSM fsm, TParent parent) : base(fsm)
     {
