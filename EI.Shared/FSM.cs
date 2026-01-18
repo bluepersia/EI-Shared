@@ -8,12 +8,17 @@ public class FSM
     private Dictionary<int, List<FSMState>> _states = new Dictionary<int, List<FSMState>>();
     public void Register(int stateId, FSMState state)
     {
-        if (!_states.ContainsKey(stateId))
+        _states.TryAdd(stateId, new List<FSMState>());
+
+        if (_states[stateId].Any(s => s.GetType() == state.GetType()))
         {
-            _states[stateId] = new List<FSMState>();
+            throw new InvalidOperationException(
+                $"State type {state.GetType().Name} already registered for state {stateId}");
         }
+
         _states[stateId].Add(state);
     }
+
 
     public void Start(int initialStateId)
     {
