@@ -108,7 +108,8 @@ public class FSM
     {
         if (_registry.TryGetValue(CurrentStateId, out var reasonStates))
         {
-            reasonStates.ForEach(state => state.Reason());
+            if (reasonStates.Count >= 1)
+                reasonStates[0].Reason();
         }
 
         if (_registry.TryGetValue(CurrentStateId, out var updateStates))

@@ -99,7 +99,7 @@ public class FSMTest
         Assert.Equal(1, idleView.EnterCalls);
         Assert.Equal(0, idleView.ExitCalls);
         Assert.Equal(1, idleView.UpdateCalls);
-        Assert.Equal(1, idleView.ReasonCalls);
+        Assert.Equal(0, idleView.ReasonCalls);
         AssertZero(moveModel);
 
         fsm.SetState(MOVE);
@@ -118,7 +118,7 @@ public class FSMTest
         Assert.Equal(1, idleView.EnterCalls);
         Assert.Equal(1, idleView.ExitCalls);
         Assert.Equal(1, idleView.UpdateCalls);
-        Assert.Equal(1, idleView.ReasonCalls);
+        Assert.Equal(0, idleView.ReasonCalls);
 
 
         Assert.Equal(1, moveModel.EnterCalls);
