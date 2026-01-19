@@ -39,6 +39,17 @@ public class FSMTest
         public MoveModel(TestFSM fsm) : base(fsm) { }
     }
 
+    public class IdleReasonModel : SpyState
+    {
+        public IdleReasonModel(TestFSM fsm) : base(fsm) { }
+
+        protected override void OnReason()
+        {
+            base.OnReason();
+            FSM.SetState(MOVE);
+        }
+    }
+
 
     public static int IDLE = 0;
     public static int MOVE = 1;
@@ -127,6 +138,31 @@ public class FSMTest
 
 
 
+    }
+
+    [Fact]
+    public void OnReasonWorks()
+    {
+        TestFSM fsm = new TestFSM(this);
+
+        IdleReasonModel idleModel = new IdleReasonModel(fsm);
+        IdleView idleView = new IdleView(fsm);
+        MoveModel moveModel = new MoveModel(fsm);
+
+        fsm.Register(IDLE, idleModel);
+        fsm.Register(IDLE, idleView);
+        fsm.Register(MOVE, moveModel);
+
+        fsm.SetState(IDLE);
+
+        fsm.Update();
+
+        Assert.Equal(1, idleModel.ReasonCalls);
+        Assert.Equal(0, idleModel.UpdateCalls);
+        Assert.Equal(0, idleView.UpdateCalls);
+
+        Assert.Equal(0, moveModel.ReasonCalls);
+        Assert.Equal(1, moveModel.UpdateCalls);
     }
 
     [Fact]
