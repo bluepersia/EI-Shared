@@ -1,4 +1,4 @@
-namespace EI.Shared;
+﻿namespace EI.Shared;
 
 public class FSM
 {
@@ -100,11 +100,20 @@ public class FSM
         return (T)first;
     }
 
+    /// <summary>
+    /// First reasons about whether to change state.
+    /// Secondly, calls update on all decided states.
+    /// </summary>
     public void Update()
     {
-        if (_registry.TryGetValue(CurrentStateId, out var states))
+        if (_registry.TryGetValue(CurrentStateId, out var reasonStates))
         {
-            states.ForEach(state => state.Update());
+            reasonStates.ForEach(state => state.Reason());
+        }
+
+        if (_registry.TryGetValue(CurrentStateId, out var updateStates))
+        {
+            updateStates.ForEach(state => state.Update());
         }
     }
 }
@@ -131,6 +140,11 @@ public abstract class FSMState
         OnEnter();
     }
 
+    public void Reason()
+    {
+        OnReason();
+    }
+
     public void Update()
     {
         OnUpdate();
@@ -147,6 +161,11 @@ public abstract class FSMState
 
     }
 
+
+    protected virtual void OnReason()
+    {
+
+    }
 
     protected virtual void OnUpdate()
     {

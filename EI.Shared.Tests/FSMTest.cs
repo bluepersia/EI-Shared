@@ -15,11 +15,14 @@ public class FSMTest
         public int EnterCalls { get; private set; } = 0;
         public int ExitCalls { get; private set; } = 0;
         public int UpdateCalls { get; private set; } = 0;
+        public int ReasonCalls { get; private set; } = 0;
 
         protected override void OnEnter() => EnterCalls++;
         protected override void OnExit() => ExitCalls++;
 
         protected override void OnUpdate() => UpdateCalls++;
+
+        protected override void OnReason() => ReasonCalls++;
     }
     public class IdleModel : SpyState
     {
@@ -45,6 +48,7 @@ public class FSMTest
         Assert.Equal(0, state.EnterCalls);
         Assert.Equal(0, state.ExitCalls);
         Assert.Equal(0, state.UpdateCalls);
+        Assert.Equal(0, state.ReasonCalls);
     }
 
     [Fact]
@@ -80,9 +84,11 @@ public class FSMTest
         Assert.Equal(1, idleModel.EnterCalls);
         Assert.Equal(0, idleModel.ExitCalls);
         Assert.Equal(1, idleModel.UpdateCalls);
+        Assert.Equal(1, idleModel.ReasonCalls);
         Assert.Equal(1, idleView.EnterCalls);
         Assert.Equal(0, idleView.ExitCalls);
         Assert.Equal(1, idleView.UpdateCalls);
+        Assert.Equal(1, idleView.ReasonCalls);
         AssertZero(moveModel);
 
         fsm.SetState(MOVE);
@@ -97,14 +103,17 @@ public class FSMTest
         Assert.Equal(1, idleModel.EnterCalls);
         Assert.Equal(1, idleModel.ExitCalls);
         Assert.Equal(1, idleModel.UpdateCalls);
+        Assert.Equal(1, idleModel.ReasonCalls);
         Assert.Equal(1, idleView.EnterCalls);
         Assert.Equal(1, idleView.ExitCalls);
         Assert.Equal(1, idleView.UpdateCalls);
+        Assert.Equal(1, idleView.ReasonCalls);
 
 
         Assert.Equal(1, moveModel.EnterCalls);
         Assert.Equal(0, moveModel.ExitCalls);
         Assert.Equal(1, moveModel.UpdateCalls);
+        Assert.Equal(1, moveModel.ReasonCalls);
 
         fsm.SetState(MOVE);
 
